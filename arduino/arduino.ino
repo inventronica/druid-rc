@@ -30,8 +30,6 @@ Servo myservo;
 UltraSonicDistanceSensor distanceSensor(TRIGGER_PIN, ECHO_PIN);
 
 void setup() {
-    // if(LOGS)
-    //     Serial.begin(9600);
     while (!Serial) {}
     Serial.begin(115200);
     Wire.begin();
