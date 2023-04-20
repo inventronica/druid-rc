@@ -8,6 +8,20 @@
 
 VL53L1X sensor;
 
+#define S0 40
+#define S1 41
+#define S2 42
+#define S3 43
+#define Color_Out 44
+
+int redFrequency = 0;
+int greenFrequency = 0;
+int blueFrequency = 0;
+
+int redColor = 0;
+int greenColor = 0;
+int blueColor = 0;
+
 #define PWML 5
 #define PWMR 6
 
@@ -17,10 +31,10 @@ VL53L1X sensor;
 #define MIN_SERVO 50
 #define MAX_SERVO 104
 
-#define SET_POINT 40.0 // desired value of sensor output
-#define KP 10     // proportional constant
-#define KI 0.1  // integrative constant
-#define KD -5    // derivative constant
+#define SET_POINT 20.0 // desired value of sensor output
+#define KP 7     // proportional constant
+#define KI 0.0  // integrative constant
+#define KD 0.0    // derivative constant
 #define DAMP 0.7
 #define LOGS true
 
@@ -31,16 +45,17 @@ UltraSonicDistanceSensor distanceSensor(TRIGGER_PIN, ECHO_PIN);
 
 void setup() {
     // if(LOGS)
-    //     Serial.begin(9600);
-    while (!Serial) {}
-    Serial.begin(115200);
-    Wire.begin();
-    Wire.setClock(400000); // use 400 kHz I2C
-    sensor.setTimeout(500);
-    if (!sensor.init()) {
-        Serial.println("Failed to detect and initialize sensor!");
-        while (1);
-    }
+         Serial.begin(9600);
+
+    // while (!Serial) {}
+    // Serial.begin(115200);
+    // Wire.begin();
+    // Wire.setClock(400000); // use 400 kHz I2C
+    // sensor.setTimeout(500);
+    // if (!sensor.init()) {
+    //     Serial.println("Failed to detect and initialize sensor!");
+    //     while (1);
+    // }
     // Use long distance mode and allow up to 50000 us (50 ms) for a measurement.
     // You can change these settings to adjust the performance of the sensor, but
     // the minimum timing budget is 20 ms for short distance mode and 33 ms for
@@ -56,14 +71,47 @@ void setup() {
     digitalWrite(MY_5V, HIGH);
     // TODO: make speed more clever
     myservo.attach(9);  // attaches the servo on pin 9 to the servo object
-    set_speed(70);
+    set_speed(0);
+    set_direction(100);
+
+    pinMode(S0, OUTPUT);
+    pinMode(S1, OUTPUT);
+    pinMode(S2, OUTPUT);
+    pinMode(S3, OUTPUT);
+    pinMode(Color_Out, INPUT);
+    digitalWrite(S0, HIGH);
+    digitalWrite(S1, LOW);
+
+
+
 }
 
 void loop() {
     // Serial.println(sensor.read());
-    int output = PID_output();
-    set_direction(output);
+    // int output = PID_output();
+    // set_direction(output);
     // delay(100);
+
+    //RED
+    digitalWrite(S2,LOW);
+    digitalWrite(S3,LOW);
+    redFrequency = pulseIn(Color_Out, LOW);
+    // redColor = map(redFrequency, 70, 120, 255, 0);
+
+    Serial.print("R = ");
+    Serial.print(redFrequency);
+
+    //GREEN
+    digitalWrite(S2, HIGH);
+    digitalWrite(S3, HIGH);
+    greenFrequency = pulseIn(Color_Out, LOW);
+    Serial.print(" G = ");
+    Serial.println(greenFrequency);
+
+    delay(100);
+
+
+
 }
 
 void set_speed(int my_speed) {
