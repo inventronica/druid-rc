@@ -2,7 +2,6 @@
 #include <Servo.h>
 #include <stdio.h>
 
-
 #include <Wire.h>
 #include <VL53L1X.h>
 
@@ -27,15 +26,16 @@ int blueColor = 0;
 
 #define MY_5V 8
 
-#define MAX_SPEED 100
-#define MIN_SERVO 50
-#define MAX_SERVO 104
+#define MAX_SPEED 130
+#define MIN_SERVO 30
+#define MAX_SERVO 150
+#define SERVO_PIN 9
 
-#define SET_POINT 20.0 // desired value of sensor output
-#define KP 7     // proportional constant
-#define KI 0.0  // integrative constant
-#define KD 0.0    // derivative constant
-#define DAMP 0.7
+double set_point 30.0 // desired value of sensor output
+double kp 4.0
+double ki 0.15  // integrative constant
+double kd 7.5    // derivative constant
+double damp 0.5
 #define LOGS true
 
 Servo myservo;
@@ -45,17 +45,17 @@ UltraSonicDistanceSensor distanceSensor(TRIGGER_PIN, ECHO_PIN);
 
 void setup() {
     // if(LOGS)
-         Serial.begin(9600);
+    Serial.begin(9600);
 
     // while (!Serial) {}
     // Serial.begin(115200);
-    // Wire.begin();
-    // Wire.setClock(400000); // use 400 kHz I2C
-    // sensor.setTimeout(500);
-    // if (!sensor.init()) {
-    //     Serial.println("Failed to detect and initialize sensor!");
-    //     while (1);
-    // }
+    Wire.begin();
+    Wire.setClock(400000); // use 400 kHz I2C
+    sensor.setTimeout(500);
+    if (!sensor.init()) {
+        Serial.println("Failed to detect and initialize sensor!");
+        while (1);
+    }
     // Use long distance mode and allow up to 50000 us (50 ms) for a measurement.
     // You can change these settings to adjust the performance of the sensor, but
     // the minimum timing budget is 20 ms for short distance mode and 33 ms for
@@ -70,9 +70,8 @@ void setup() {
     pinMode(MY_5V, OUTPUT);
     digitalWrite(MY_5V, HIGH);
     // TODO: make speed more clever
-    myservo.attach(9);  // attaches the servo on pin 9 to the servo object
-    set_speed(0);
-    set_direction(100);
+    myservo.attach(SERVO_PIN);  // attaches the servo on pin 9 to the servo object
+    set_speed(MAX_SPEED);
 
     pinMode(S0, OUTPUT);
     pinMode(S1, OUTPUT);
@@ -81,37 +80,19 @@ void setup() {
     pinMode(Color_Out, INPUT);
     digitalWrite(S0, HIGH);
     digitalWrite(S1, LOW);
-
-
-
 }
 
 void loop() {
-    // Serial.println(sensor.read());
-    // int output = PID_output();
-    // set_direction(output);
-    // delay(100);
-
-    //RED
-    digitalWrite(S2,LOW);
-    digitalWrite(S3,LOW);
-    redFrequency = pulseIn(Color_Out, LOW);
-    // redColor = map(redFrequency, 70, 120, 255, 0);
-
-    Serial.print("R = ");
-    Serial.print(redFrequency);
-
-    //GREEN
-    digitalWrite(S2, HIGH);
-    digitalWrite(S3, HIGH);
-    greenFrequency = pulseIn(Color_Out, LOW);
-    Serial.print(" G = ");
-    Serial.println(greenFrequency);
-
-    delay(100);
-
-
-
+    if (Serial.available() > 0) {
+        String incomingString = Serial.readStringUntil('\n');
+        Serial.print("I received: ");
+        Serial.println(incomingString);
+        int a, b, c, d;
+        sscanf(incomingString.c_str(), "%d %d %d %d", &a, &b, &c, &d);
+        sp=a/1000.0, kp=b/1000.0, ki=c/1000.0, kd=d/1000.0;
+    }
+    int output = PID_output();
+    set_direction(output);
 }
 
 void set_speed(int my_speed) {
@@ -139,20 +120,6 @@ void set_direction(int position) {
     myservo.write(position);
 }
 
-double get_error_sonic() {
-    static double output = SET_POINT;
-    double sensor_value = distanceSensor.measureDistanceCm();
-    if(LOGS){
-        Serial.print(" Sensor: ");
-        Serial.print(sensor_value);
-    }
-    if (sensor_value < 0) return output;
-    else if (sensor_value > 70) sensor_value = 70;
-    else if (sensor_value < 30) sensor_value = 30;
-    output = sensor_value-SET_POINT;
-    return (output);
-}
-
 double get_error_tof() {
     sensor.read();
     static double output = 0;
@@ -163,10 +130,10 @@ double get_error_tof() {
         Serial.print(" Sensor status: ");
         Serial.print(sensor.ranging_data.range_status);
     }
-    if (sensor.ranging_data.range_status != 0) sensor_value = SET_POINT+20;
-    else if (sensor_value > SET_POINT+20) sensor_value = SET_POINT+20;
-    else if (sensor_value < SET_POINT-20) sensor_value = SET_POINT-20;
-    output = sensor_value-SET_POINT;
+    if (sensor.ranging_data.range_status != 0) sensor_value = set_point+20;
+    else if (sensor_value > set_point+20) sensor_value = set_point+20;
+    else if (sensor_value < set_point-20) sensor_value = set_point-20;
+    output = sensor_value-set_point;
     return (output);
 }
 
@@ -177,10 +144,11 @@ int PID_output() {
         Serial.print(error);
     }
     static double integral = 0;
-    integral = integral * DAMP + error;
+    integral = integral * damp + error;
     static double last_error = 0;
-    double derivative = last_error - error;
-    int output = int(error*KP + integral*KI + derivative*KD);
+    double derivative = error - last_error;
+    last_error = error;
+    int output = int(error*kp + integral*ki + derivative*kd);
     if(LOGS) {
         Serial.print(" Output: ");
         Serial.println(output);
