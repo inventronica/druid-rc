@@ -3,22 +3,23 @@ from roboflowoak import RoboflowOak
 import time
 import numpy as np
 
-import serial
+# import serial
 from time import sleep
 
 DEBUG = True
 if DEBUG:
     import cv2
 
-arduino_ser = serial.Serial("/dev/ttyS0", 9600)
+# arduino_ser = serial.Serial("/dev/ttyS0", 9600)
 kp = 4
 ki = 0.15
 kd = 7.5
-red_box_set_point = 60
-green_box_set_point = 30
+red_box_set_point = 30
+green_box_set_point = 60
 
 def send_set_point(set_point):
-    arduino_ser.write(f'{int(set_point*1000)} {int(kp*1000)} {int(ki*1000)} {int(kd*1000)}')
+    pass
+    # arduino_ser.write(f'{int(set_point*1000)} {int(kp*1000)} {int(ki*1000)} {int(kd*1000)}')
 
 if __name__ == '__main__':
     # instantiating an object (rf) with the RoboflowOak module
@@ -49,12 +50,6 @@ if __name__ == '__main__':
             if DEBUG:
                 print('========  GREEN BOX NEXT  ========')
             send_set_point(green_box_set_point)
-
-        # timing: for benchmarking purposes
-        # if DEBUG:
-        #     t = time.time()-t0
-        #     print("INFERENCE TIME IN MS ", 1/t)
-        #     print("PREDICTIONS ", [p.json() for p in predictions])
 
         if DEBUG:
             cv2.imshow("frame", frame)
