@@ -32,7 +32,7 @@ int blueColor = 0;
 #define MAX_SERVO 150
 #define SERVO_PIN 9
 
-double set_point = 30.0; // desired value of sensor output
+double set_point = 15.0; // desired value of sensor output
 double kp = 3.0;
 double ki = 0.05;  // integrative constant
 double kd = 0.0;  // derivative constant

@@ -11,7 +11,7 @@ if DEBUG:
     import cv2
 
 # arduino_ser = serial.Serial("/dev/ttyS0", 9600)
-kp = 4
+kp = 3
 ki = 0.15
 kd = 7.5
 red_box_set_point = 30
@@ -30,6 +30,7 @@ if __name__ == '__main__':
     while True:
         if DEBUG:
             t0 = time.time()
+            
         # The rf.detect() function runs the model inference
         result, frame, raw_frame, depth = rf.detect(visualize=True)
         predictions = result["predictions"]
