@@ -1,5 +1,5 @@
 #include "HCSR04.h"
-#include <Servo.h>
+#include <ESP32_Servo.h>
 #include <stdio.h>
 
 #include <Wire.h>
@@ -7,21 +7,21 @@
 
 LIDARLite_v4LED myLIDAR;
 
-#define INA 10
-#define INB 12
-#define PWM 3
+#define INA 18 // R_IS
+#define INB 19 // L_IS
+#define PWM 23 // R_PWM
 
 #define MAX_SPEED 48
 #define MIN_SERVO 70
 #define MAX_SERVO 170
-#define SERVO_PIN 6
+#define SERVO_PIN 32
 
 double set_point = 30.0; // desired value of sensor output
 double kp = 2.0;
 double ki = 0.0;  // integrative constant
 double kd = 0.0;    // derivative constant
 double damp = 0.5;
-#define LOGS false
+#define LOGS true
 #define DEBUG false
 
 Servo myservo;
@@ -57,6 +57,8 @@ void setup() {
     set_speed(MAX_SPEED);
     if (DEBUG)
         Serial.println("END OF SETUP");
+
+    
 }
 
 void loop() {

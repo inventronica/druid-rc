@@ -1,5 +1,5 @@
 #include "HCSR04.h"
-#include <Servo.h>
+#include <ESP32_Servo.h>
 #include <stdio.h>
 
 #include <Wire.h>
@@ -7,30 +7,15 @@
 
 VL53L1X sensor;
 
-#define S0 40
-#define S1 41
-#define S2 42
-#define S3 43
-#define Color_Out 44
+#define PWML 19
+#define PWMR 18
 
-int redFrequency = 0;
-int greenFrequency = 0;
-int blueFrequency = 0;
-
-int redColor = 0;
-int greenColor = 0;
-int blueColor = 0;
-
-#define PWML 5
-#define PWMR 6
-
-#define MY_5V 8
 
 #define MAX_SPEED 100
 #define MIN_SPEED 60
-#define MIN_SERVO 30
-#define MAX_SERVO 150
-#define SERVO_PIN 9
+#define MIN_SERVO -50
+#define MAX_SERVO 180
+#define SERVO_PIN 32
 
 double set_point = 30.0; // desired value of sensor output
 double kp = 3.0;
@@ -68,19 +53,10 @@ void setup() {
     // put your setup code here, to run once:
     pinMode(PWML, OUTPUT);
     pinMode(PWMR, OUTPUT);
-    pinMode(MY_5V, OUTPUT);
-    digitalWrite(MY_5V, HIGH);
     // TODO: make speed more clever
     myservo.attach(SERVO_PIN);  // attaches the servo on pin 9 to the servo object
     set_speed(MAX_SPEED);
 
-    pinMode(S0, OUTPUT);
-    pinMode(S1, OUTPUT);
-    pinMode(S2, OUTPUT);
-    pinMode(S3, OUTPUT);
-    pinMode(Color_Out, INPUT);
-    digitalWrite(S0, HIGH);
-    digitalWrite(S1, LOW);
 }
 
 void loop() {
