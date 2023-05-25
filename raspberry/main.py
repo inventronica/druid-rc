@@ -11,16 +11,14 @@ from time import sleep
 # sudo pip install vl53l1x
 # sudo pip3 install adafruit-circuitpython-icm20x
 
-
-
 S0 = 40
 S1 = 41
 S2 = 42
 S3 = 43
 Color_Out = 44
 
-PWML = 5
-PWMR = 6
+PWML = 12
+PWMR = 13
 
 MAX_SPEED = 100
 MIN_SPEED = 60
@@ -54,7 +52,15 @@ GPIO.setup(ledpin,GPIO.OUT)
 pi_pwm = GPIO.PWM(ledpin,1000)		#create PWM instance with frequency
 pi_pwm.start(0)				#start PWM of required Duty Cycle 
 
-# TODO: update for motors
+# TODO: check for motors
+GPIO.setwarnings(False)			#disable warnings
+GPIO.setmode(GPIO.BOARD)		#set pin numbering system
+GPIO.setup(PWML,GPIO.OUT)
+left_pwm = GPIO.PWM(PWML,1000)		#create PWM instance with frequency
+GPIO.setup(PWMR,GPIO.OUT)
+right_pwm = GPIO.PWM(PWMR,1000)		#create PWM instance with frequency
+left_pwm.start(0)	
+right_pwm.start(0)
 
 
 angle = 0
@@ -64,21 +70,18 @@ def get_gyro():
     x, y, z = icm.gyro   # TODO: find rotation axis
     angle += x
 
-
-def setup():
-    # TODO: define all pins
-    pass
-
 def set_speed(my_speed):
     if my_speed > MAX_SPEED: my_speed = MAX_SPEED
     if my_speed < -MAX_SPEED: my_speed = -MAX_SPEED
     if my_speed > 0:
-        # TODO: control motors
-        pass
+        right_pwm.ChangeDutyCycle(my_speed) 
+        left_pwm.ChangeDutyCycle(0) 
     elif my_speed < 0:
-        pass
+        right_pwm.ChangeDutyCycle(0) 
+        left_pwm.ChangeDutyCycle(-my_speed) 
     else:
-        pass
+        right_pwm.ChangeDutyCycle(0) 
+        left_pwm.ChangeDutyCycle(0) 
 
 # You can also use the value property to move the servo to a particular position, on a scale from -1 (min) to 1 (max) where 0 is the mid-point:
 # to reduce servo jitler: https://gpiozero.readthedocs.io/en/stable/api_output.html?highlight=Servo#gpiozero.Servo 
