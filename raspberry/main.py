@@ -1,7 +1,9 @@
-from gpiozero import Servo
+# from gpiozero import Servo
+import signal
 import VL53L1X
-import board
-import adafruit_icm20x
+import sys
+# import board
+# import adafruit_icm20x
 import RPi.GPIO as GPIO
 from time import sleep
 
@@ -10,12 +12,6 @@ from time import sleep
 # sudo pip install smbus2
 # sudo pip install vl53l1x
 # sudo pip3 install adafruit-circuitpython-icm20x
-
-S0 = 40
-S1 = 41
-S2 = 42
-S3 = 43
-Color_Out = 44
 
 PWML = 12
 PWMR = 13
@@ -33,34 +29,33 @@ kd = 0.0
 damp = 0.5
 LOGS = True
 
-myservo = Servo(25)
-tof = VL53L1X.VL53L1X(i2c_bus=1, i2c_address=0x29)
-tof.open()
-tof.start_ranging(1)  # Start ranging
+# myservo = Servo(25)
+# tof = VL53L1X.VL53L1X(i2c_bus=1, i2c_address=0x29)
+# tof.open()
+# tof.start_ranging(1)  # Start ranging
                       # 0 = Unchanged
                       # 1 = Short Range
                       # 2 = Medium Range
                       # 3 = Long Range
 
-i2c = board.I2C()  # uses board.SCL and board.SDA
-icm = adafruit_icm20x.ICM20948(i2c)
+# i2c = board.I2C()  # uses board.SCL and board.SDA
+# icm = adafruit_icm20x.ICM20948(i2c)
 
 ledpin = 12				# PWM pin connected to LED
 GPIO.setwarnings(False)			#disable warnings
-GPIO.setmode(GPIO.BOARD)		#set pin numbering system
+GPIO.setmode(GPIO.BCM)		#set pin numbering system
 GPIO.setup(ledpin,GPIO.OUT)
 pi_pwm = GPIO.PWM(ledpin,1000)		#create PWM instance with frequency
 pi_pwm.start(0)				#start PWM of required Duty Cycle 
 
 # TODO: check for motors
 GPIO.setwarnings(False)			#disable warnings
-GPIO.setmode(GPIO.BOARD)		#set pin numbering system
 GPIO.setup(PWML,GPIO.OUT)
-left_pwm = GPIO.PWM(PWML,1000)		#create PWM instance with frequency
-GPIO.setup(PWMR,GPIO.OUT)
-right_pwm = GPIO.PWM(PWMR,1000)		#create PWM instance with frequency
-left_pwm.start(0)	
-right_pwm.start(0)
+# left_pwm = GPIO.PWM(PWML,1000)		#create PWM instance with frequency
+# GPIO.setup(PWMR,GPIO.OUT)
+# right_pwm = GPIO.PWM(PWMR,1000)		#create PWM instance with frequency
+# left_pwm.start(0)	
+# right_pwm.start(0)
 
 
 angle = 0
@@ -92,7 +87,28 @@ def set_direction(position):
     position = map(position, 100, -100, MIN_SERVO, MAX_SERVO)
     myservo.value = position
 
-
+def set_tof():
+    xshut_pin = 17 
+    GPIO.setup(xshut_pin, GPIO.OUT)
+    GPIO.output(xshut_pin, GPIO.HIGH)
+    tof = VL53L1X.VL53L1X(i2c_bus=1, i2c_address=0x29)
+    tof.open()
+    tof.change_address(0x33)
+    tof.close()
+    GPIO.output(xshut_pin, GPIO.LOW)
+    GPIO.output(xshut_pin, GPIO.HIGH)
+    global left_tof
+    global right_tof
+    left_tof = VL53L1X.VL53L1X(i2c_bus=1, i2c_address=0x29)
+    left_tof.open()
+    left_tof.start_ranging(1)  # Start ranging
+                               # 0 = Unchanged
+                               # 1 = Short Range
+                               # 2 = Medium Range
+                               # 3 = Long Range
+    right_tof = VL53L1X.VL53L1X(i2c_bus=1, i2c_address=0x33)
+    right_tof.open()
+    right_tof.start_ranging(1)
 
 def get_error():
     distance_in_mm = tof.get_distance()
@@ -116,11 +132,36 @@ def PID_output():
     # TODO: check pwm pin output
     return output
 
-while True:
+
+def setup():
+    set_tof()
+
+running = True
+def loop():
+    while running:
+        left_tof_mm = left_tof.get_distance()
+        right_tof_mm = right_tof.get_distance()
+        print(f'Left distance: {left_tof_mm}, Right distance: {right_tof_mm}')
+        sleep(0.1)
     # TODO: read distance sensors
     # TODO: read imu sensors
     # TODO: communicate between processes to get camera info
-    output = PID_output()
-    set_speed(max(MIN_SPEED, MAX_SPEED-abs(output)))
-    set_direction(output)
+    # output = PID_output()
+    # set_speed(max(MIN_SPEED, MAX_SPEED-abs(output)))
+    # set_direction(output)
 
+def exit_handler(signal, frame):
+    global running
+    running = False
+    left_tof.stop_ranging()
+    # left_tof.close()
+    right_tof.stop_ranging()
+    # right_tof.close()
+    print()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, exit_handler)
+
+if __name__ == "__main__":
+    setup()
+    loop()
