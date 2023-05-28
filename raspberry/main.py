@@ -2,8 +2,8 @@
 import signal
 import VL53L1X
 import sys
-# import board
-# import adafruit_icm20x
+import board
+import adafruit_icm20x
 import RPi.GPIO as GPIO
 from time import sleep
 
@@ -30,16 +30,9 @@ damp = 0.5
 LOGS = True
 
 # myservo = Servo(25)
-# tof = VL53L1X.VL53L1X(i2c_bus=1, i2c_address=0x29)
-# tof.open()
-# tof.start_ranging(1)  # Start ranging
-                      # 0 = Unchanged
-                      # 1 = Short Range
-                      # 2 = Medium Range
-                      # 3 = Long Range
 
-# i2c = board.I2C()  # uses board.SCL and board.SDA
-# icm = adafruit_icm20x.ICM20948(i2c)
+i2c = board.I2C()  # uses board.SCL and board.SDA
+icm = adafruit_icm20x.ICM20948(i2c)
 
 ledpin = 12				# PWM pin connected to LED
 GPIO.setwarnings(False)			#disable warnings
@@ -142,6 +135,8 @@ def loop():
         left_tof_mm = left_tof.get_distance()
         right_tof_mm = right_tof.get_distance()
         print(f'Left distance: {left_tof_mm}, Right distance: {right_tof_mm}')
+        x, y, z = icm.gyro
+        print(f'Gyro X: {x}, Gyro Y: {y}, Gyro Z: {z}')
         sleep(0.1)
     # TODO: read distance sensors
     # TODO: read imu sensors
