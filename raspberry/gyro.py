@@ -4,6 +4,7 @@ import time
 import signal
 from exit_handler import exit_handler
 import board
+import math
 
 class Gyro:
     def __init__(self):
@@ -20,7 +21,7 @@ class Gyro:
             delta = new_time - self._time
             self._time = new_time
             x, y, z = self._icm.gyro
-            self.angle.value = (self._last_speed + z)*delta/2
+            self.angle.value = self.angle.value +(self._last_speed + z)*delta/2
             self._last_speed = z
 
 
@@ -32,7 +33,7 @@ if __name__ == '__main__':
     gyro_process.start()
     # gyro_process.join()
     while running:
-        print(f'Gyro value: {gyro.angle.value}')
+        print(f'Gyro value: {math.degrees(gyro.angle.value)}')
         time.sleep(1)
     gyro_process.running.value = False
     gyro_process.join()

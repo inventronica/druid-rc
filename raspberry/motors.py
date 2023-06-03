@@ -2,41 +2,53 @@ import RPi.GPIO as GPIO
 from gpiozero import Servo
 from exit_handler import exit_handler
 import signal
+import pigpio
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)			#disable warnings
 
 class Motors:
-    MAX_SPEED = 100
-    MIN_SPEED = 60
-    MIN_SERVO = -1.0
-    MAX_SERVO = 1.0
+    MAX_SPEED = 10000
+    MIN_SPEED = 0
+    MIN_SERVO = -0.75
+    MAX_SERVO = 0.75
     #pin for motors
     PWML = 12
     PWMR = 13
-    SERVO_PIN = 9
+    SERVO_PIN = 18
 
     def __init__(self):
-        self.myservo = Servo(SERVO_PIN)
-        GPIO.setup(PWML, GPIO.OUT)
-        GPIO.setup(PWMR, GPIO.OUT)
+        self.myservo = Servo(self.SERVO_PIN)
+        GPIO.setup(self.PWML, GPIO.OUT)
+        GPIO.setup(self.PWMR, GPIO.OUT)
 
-        self.left_pwm = GPIO.PWM(PWML, 1000)		#create PWM instance with frequency
-        self.right_pwm = GPIO.PWM(PWMR, 1000)		#create PWM instance with frequency
+        self.left_pwm = GPIO.PWM(self.PWML, 50)		#create PWM instance with frequency
+        self.right_pwm = GPIO.PWM(self.PWMR, 50)		#create PWM instance with frequency
         self.left_pwm.start(0)	
         self.right_pwm.start(0)
-
+        self.pi = pigpio.pi()
+        self.pi.set_PWM_frequency(self.PWML, 50)
+        self.pi.set_PWM_frequency(self.PWMR, 50)
+        self.pi.set_mode(self.PWML, pigpio.OUTPUT)
+        self.pi.set_mode(self.PWMR, pigpio.OUTPUT)
 
     def set_speed(self, my_speed):
-        if my_speed > MAX_SPEED: my_speed = MAX_SPEED
-        if my_speed < -MAX_SPEED: my_speed = -MAX_SPEED
+        if my_speed > self.MAX_SPEED: my_speed = MAX_SPEED
+        if my_speed < -self.MAX_SPEED: my_speed = -MAX_SPEED
+        # my_speed = my_speed*10
         if my_speed > 0:
+            # self.pi.pwmWrite(self.PWML, my_speed)
+            # self.pi.digitalWrite(self.PWMR, 0)
             self.right_pwm.ChangeDutyCycle(my_speed) 
             self.left_pwm.ChangeDutyCycle(0) 
         elif my_speed < 0:
+            # self.pi.pwmWrite(self.PWMR, -my_speed)
+            # self.pi.digitalWrite(self.PWML, 0)
             self.right_pwm.ChangeDutyCycle(0) 
             self.left_pwm.ChangeDutyCycle(-my_speed) 
         else:
+            # self.pi.digitalWrite(self.PWML, 0)
+            # self.pi.digitalWrite(self.PWMR, 0)
             self.right_pwm.ChangeDutyCycle(0) 
             self.left_pwm.ChangeDutyCycle(0) 
 
@@ -65,8 +77,8 @@ if __name__ == "__main__":
     motors = Motors()
     running = True
     # calibrate servo
-    while running:
-        calibrate_servo(motors)
-    # test motor speed
     # while running:
-    #     test_speed(motors)
+    #     calibrate_servo(motors)
+    # test motor speed
+    while running:
+        test_speed(motors)
