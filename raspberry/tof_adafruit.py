@@ -1,11 +1,16 @@
 import RPi.GPIO as GPIO
+import board
 import VL53L1X
+import adafruit_vl53l1x
 import time
 import signal
+import sys
 
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)			#disable warnings
+
+i2c = board.I2C()
 
 class Tof:
     DEFAULT_ADDRESS = 0x29
@@ -14,23 +19,15 @@ class Tof:
         if xshut_pin is not None:
             self.reset_address(xshut_pin)
         try:
-            self.tof = VL53L1X.VL53L1X(i2c_bus=1, i2c_address=self.DEFAULT_ADDRESS)
-            self.tof.open()
-        
+            self.tof = adafruit_vl53l1x.VL53L1X(i2c)
             if address != self.DEFAULT_ADDRESS:
                 self.change_address(address)
-        except RuntimeError:
-            self.tof = VL53L1X.VL53L1X(i2c_bus=1, i2c_address=address)
-            self.tof.open()
-        self.tof.start_ranging(1)
-        self.tof.get_distance()
-        self.tof.stop_ranging()
+        except:
+            self.tof = adafruit_vl53l1x.VL53L1X(i2c, address=address)
+        self.tof.start_ranging()
     
     def change_address(self, address):
-        self.tof.change_address(address)
-        self.tof.close()
-        del self.tof
-        self.tof = VL53L1X.VL53L1X(i2c_bus=1, i2c_address=address)
+        self.tof.set_address(address)
     
     def reset_address(self, xshut_pin):
         GPIO.setup(xshut_pin, GPIO.OUT)
@@ -38,15 +35,11 @@ class Tof:
         GPIO.output(xshut_pin, GPIO.HIGH)
 
     def get_distance(self):
-        time1 = time.time()
-        self.tof.start_ranging(0)
-        sensor_value = self.tof.get_distance()/10.0
-        self.tof.stop_ranging()
-        time2 = time.time()
+        while not self.tof.data_ready:
+            pass
+        sensor_value = self.tof.distance
+        self.tof.clear_interrupt()
         return sensor_value
-
-    def get_status(self):
-        pass # TODO: search for sensor range status (https://github.com/pimoroni/vl53l1x-python/tree/master)
 
     # def __del__(self):
     #     self.tof.stop_ranging()
@@ -60,9 +53,8 @@ if __name__ == '__main__':
     running = True
     signal.signal(signal.SIGINT, exit_handler)
     right_tof = Tof(address=0x33)
-    # left_tof = Tof(xshut_pin=17)
+    left_tof = Tof(xshut_pin=17)
     while running:
         right_distance = right_tof.get_distance()
-        # left_distance = left_tof.get_distance()
-        print(f'right_distance: {right_distance}')
-        # time.sleep(0.5)
+        left_distance = left_tof.get_distance()
+        print(f'{right_distance=}, {left_distance=}')

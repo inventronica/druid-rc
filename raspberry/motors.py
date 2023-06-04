@@ -1,4 +1,5 @@
 import RPi.GPIO as GPIO
+import time
 from gpiozero import Servo
 from exit_handler import exit_handler
 import signal
@@ -8,8 +9,8 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)			#disable warnings
 
 class Motors:
-    MAX_SPEED = 10000
-    MIN_SPEED = 0
+    MAX_SPEED = 100
+    MIN_SPEED = 5
     MIN_SERVO = -0.75
     MAX_SERVO = 0.75
     #pin for motors
@@ -58,7 +59,8 @@ class Motors:
     def set_direction(self, position):
         if position < -100: position = -100
         if position > 100: position = 100
-        position = map(position, 100, -100, MIN_SERVO, MAX_SERVO)
+        my_map = lambda a, b, c, d, e: (a-b) * (e-d) / (c-b) + d
+        position = my_map(position, 100, -100, self.MIN_SERVO, self.MAX_SERVO)
         self.myservo.value = position
 
     def set_raw_position(self, position):
@@ -76,9 +78,11 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, exit_handler)
     motors = Motors()
     running = True
+    motors.set_speed(60)
     # calibrate servo
     # while running:
     #     calibrate_servo(motors)
     # test motor speed
     while running:
         test_speed(motors)
+    motors.set_speed(0)
