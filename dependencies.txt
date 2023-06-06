@@ -3,3 +3,5 @@ sudo pip3 install gpiozero
 sudo pip install smbus2
 sudo pip install vl53l1x
 sudo pip3 install adafruit-circuitpython-icm20x
+sudo pip3 install roboflowoak
+sudo pip3 install depthai

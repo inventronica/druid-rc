@@ -43,6 +43,21 @@ class PID:
     def reset_last_error(self):
         self.last_error = 0
 
+
+    def get_output(self, error):
+        current_time = time.time()
+        delta = current_time  - self.last_time
+        self.last_time = current_time
+        
+        self.integral = self.integral * self.damp + (error+self.last_error)*delta/2
+        derivative = (error - self.last_error)/delta
+        self.last_error = error
+
+        output = int(error*self.kp + self.integral*self.ki + derivative*self.kd)
+        return output
+
+
+
     def get_output(self, gyro=1, wall='left'):
         delta = time.time() - self.last_time
         self.last_time = time.time()
