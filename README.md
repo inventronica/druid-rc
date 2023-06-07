@@ -1,6 +1,6 @@
 # druid-rc
 
-Acesta este repo-ul care contine fisierele cu programele care stau la baza functionarii robotului.
+Acesta este repo-ul care conține fișierele cu programele care stau la baza funcționării robotului.
 
 ## Descriere
 
