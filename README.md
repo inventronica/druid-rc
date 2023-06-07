@@ -1,4 +1,4 @@
-# druid-rc
+# Rodroizii - Future Engineers
 
 Acesta este repo-ul care conține fișierele cu programele care stau la baza funcționării robotului.
 
