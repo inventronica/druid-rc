@@ -143,3 +143,7 @@ def gyro_test():
         time.sleep(1)
     gyro.running.value = False
     gyro_process.join()
+
+
+if __name__ == '__main__':
+    tof_test()

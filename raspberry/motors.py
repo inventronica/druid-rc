@@ -34,8 +34,8 @@ class Motors:
         self.pi.set_mode(self.PWMR, pigpio.OUTPUT)
 
     def set_speed(self, my_speed):
-        if my_speed > self.MAX_SPEED: my_speed = MAX_SPEED
-        if my_speed < -self.MAX_SPEED: my_speed = -MAX_SPEED
+        if my_speed > self.MAX_SPEED: my_speed = self.MAX_SPEED #
+        if my_speed < -self.MAX_SPEED: my_speed = -self.MAX_SPEED
         # my_speed = my_speed*10
         if my_speed > 0:
             # self.pi.pwmWrite(self.PWML, my_speed)
@@ -78,11 +78,11 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, exit_handler)
     motors = Motors()
     running = True
-    motors.set_speed(60)
+    motors.set_speed(0)
     # calibrate servo
-    # while running:
-    #     calibrate_servo(motors)
-    # test motor speed
     while running:
-        test_speed(motors)
+        calibrate_servo(motors)
+    # test motor speed
+    # while running:
+    #    test_speed(motors)
     motors.set_speed(0)

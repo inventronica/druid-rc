@@ -1,57 +1,76 @@
+from roboflowoak import RoboflowOak
+from follower import Follower
+
 import time
-import multiprocessing
-# from exit_handler import exit_handler
-from sensors import Tof
-from sensors import Gyro
-from sensors import Color
-from pid import PID
-from motors import Motors
-import math
+import numpy as np
 import signal
 import sys
 
-# exit handler -> used to stop the program
+from time import sleep
+import multiprocessing
+
+
+class CubeDetection:
+    def __init__(self, debug=False):
+        self.debug = debug
+        if self.debug:
+            import cv2
+        self.camera = RoboflowOak(model="controled-box", confidence=0.5, 
+                overlap=0.5, version="5", api_key="", rgb=True, depth=False, device=None, blocking=True)
+
+    def update_next(self):
+        result, frame, raw_frame, depth = self.camera.detect(visualize=self.debug)
+        if result is not None and result is not []:
+            predictions = result['predictions']
+            surface = 0
+            next_cube = 'unknown'
+            for prediction in predictions:
+                cube = prediction.json()
+                if cube['width'] * cube['height'] > surface:
+                    surface = cube['width'] * cube['height']
+                    next_cube = cube['class']
+            if surface < 1200:
+                next_cube = 'unknown'
+            # next_cube: 'UNKNOWN', 'red box', 'green box'
+
+            # if self.debug:
+            #     cv2.imshow("frame", frame)
+            #     print(f'{next_cube=}')
+
+            # if self.debug:
+            #     if cv2.waitKey(1) == ord('q'):
+            #         break
+            # if once:
+            #     break
+
+            if self.debug:
+                return next_cube, frame
+            else:
+                return next_cube
+
+
 def exit_handler(signal, frame):
     global running
     running = False
+    sys.exit(0)
 
-
-running = True # used to stop program
-if __name__ == "__main__":
-    try: # gracefully close the program in finall
-        signal.signal(signal.SIGINT, exit_handler) # attach exit handler
-
-        # initialise sensors
-        my_color = Color(enable_pin=25)
-        right_tof = Tof(address=0x33)
-        left_tof = Tof(address=0x34, xshut_pin=17)
-        left_tof.change_address(0x32)
-        my_color.power_on()
-        gyro = Gyro()
-        # start gyro process to continously calculate angle
-        gyro_process = multiprocessing.Process(target=gyro.calculate_angle)
-        gyro_process.start()
-        # start color sensor process, so the color lines are not missed 
-        color_process = multiprocessing.Process(target=color_sensor.color_read)
-        color_process.start()
-        # initialise main PID program
-        pid = PID(left_tof, right_tof, kp=6, kd=3, ki=0.2, damp=0.5, distance=25)
-        # initialise motors
-        motors = Motors()
-        motors.set_speed(30)
-        gyro_turn = 0 # used to count the number of 90 deg turns
-        while running:
-            gyro_angle = gyro.angle.value
-            if gyro.angle.value + gyro_turn > math.pi/2:
-                gyro_turn += 1
-            elif gyro.angle.value - gyro_turn < math.pi/2:
-                gyro_turn -= 1
-            pid_output = pid.get_output(math.cos(gyro.angle.value + gyro_turn*math.pi/2), wall='left')
-            motors.set_direction(pid_output)
-
-
-    finally:
-        # motors.set_speed(0)
-        gyro.running.value = 0 
-        color.running.value = 0 
-        gyro_process.join()
+if __name__ == '__main__':
+    running = True
+    signal.signal(signal.SIGINT, exit_handler)
+    my_cube = CubeDetection()
+    my_follower = Follower()
+    my_follower.side.value = 2
+    follower_process = multiprocessing.Process(target=my_follower.run_follower)
+    while running:
+        time1 = time.time()
+        next_cube = my_cube.update_next()
+        if next_cube == 'green box':
+            my_follower.side = 1
+        elif next_cube == 'red box':
+            my_follower.side = 2
+        else:
+            pass
+        print(f'{next_cube=}')
+        # print(f'{next_cube=}\ttime_between_loops={time.time()-time1}\t{surface=}')
+    my_follower.running.value = 0
+    follower_process.join()
