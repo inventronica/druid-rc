@@ -13,7 +13,7 @@ In `main.py` sunt initializati senzorii de Time-Of-Flight si Gyro. Este pornit p
 
 ## sensors.py
 
-[sensors.py](../raspberry/sensors.py) conține clasele tuturor senzorilor, unde 
+[sensors.py](../master/raspberry/sensors.py) conține clasele tuturor senzorilor, unde 
 
 ## motors.py
 
