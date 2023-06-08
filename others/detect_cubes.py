@@ -1,18 +1,16 @@
 from roboflowoak import RoboflowOak
-from follower import Follower, follower_process
 
 import time
 import numpy as np
 import signal
 import sys
-from motors import Motors
 
 from time import sleep
 import multiprocessing
 
 
 class CubeDetection:
-    def __init__(self, debug=False):
+    def __init__(self, debug=True):
         self.debug = debug
         if self.debug:
             import cv2
@@ -30,18 +28,19 @@ class CubeDetection:
                 if cube['width'] * cube['height'] > surface:
                     surface = cube['width'] * cube['height']
                     next_cube = cube['class']
-            if surface < 1000:
+            if surface < 1200:
                 next_cube = 'unknown'
             # next_cube: 'UNKNOWN', 'red box', 'green box'
 
-            # if self.debug:
-            #     cv2.imshow("frame", frame)
+            if self.debug:
+                cv2.imshow("frame", frame)
+                print(f'{next_cube=}')
 
-            # if self.debug:
-            #     if cv2.waitKey(1) == ord('q'):
-            #         break
-            # if once:
-            #     break
+            if self.debug:
+                if cv2.waitKey(1) == ord('q'):
+                    break
+            if once:
+                break
 
             if self.debug:
                 return next_cube, frame
@@ -55,27 +54,11 @@ def exit_handler(signal, frame):
     sys.exit(0)
 
 if __name__ == '__main__':
-    multiprocessing.set_start_method('fork')
     running = True
     signal.signal(signal.SIGINT, exit_handler)
     my_cube = CubeDetection()
-    follow_run = multiprocessing.Value('i', 1)
-    cube = multiprocessing.Value('i', 1)
-    follower_process = multiprocessing.Process(target=follower_process, args=(follow_run, cube))
-    try:
-        follower_process.start()
-        while running:
-            # time1 = time.time()
-            sleep(0.2)
-            next_cube = my_cube.update_next()
-            if next_cube == 'green box':
-                cube.value = 1
-            elif next_cube == 'red box':
-                cube.value = 2
-            else:
-                pass
-        follow_run.value = 0
-        follower_process.join()
-    finally:
-        motors = Motors()
-        motors.set_speed(0)
+    while running:
+        time1 = time.time()
+        next_cube = my_cube.update_next()
+        print(f'{next_cube=}')
+        # print(f'{next_cube=}\ttime_between_loops={time.time()-time1}\t{surface=}')
