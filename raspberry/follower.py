@@ -40,6 +40,7 @@ class Follower:
         time.sleep(2)
         self.motors.set_speed(30)
         self.last_lane = 2
+        self.clockwise = None
 
     
     def run_follower(self, side):
@@ -54,6 +55,22 @@ class Follower:
             error = get_error(self.right_tof.get_distance(), gyro_angle, wall='right', set_point=self.distance)
         elif side == 1:
             error = get_error(self.left_tof.get_distance(), gyro_angle, wall='left', set_point=self.distance)
+        current_color = self.color.value
+        if self.clockwise is None:
+            if current_color == 1:
+                self.clockwise = True
+            elif current_color == 2:
+                self.clockwise = False
+        if current_color == 1:
+            if self.clockwise==True:
+                self.run_gyro_follower((turn-1)*math.pi/2 + math.pi / 4 -math.pi/2)
+            else:
+                self.run_gyro_follower(turn*math.pi/2+math.pi/2)
+        elif current_color == 2:
+            if self.clockwise==True:
+                self.run_gyro_follower(turn*math.pi/2-math.pi/2)
+            else:
+                self.run_gyro_follower((turn-1)*math.pi/2 - math.pi / 4 +math.pi/2)
         pid_output = self.pid.get_output(error)
         self.motors.set_direction(pid_output)
 
