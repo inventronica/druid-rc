@@ -93,7 +93,9 @@ Modul de comunicare cu placa Raspberry Pi este prin SSH (Secure Shell), un proto
     ![ping](../master/other/miscellaneous/ping.png)
     * După aflarea ip-ului, se poate folosi comanda: `ssh pi@192.168.x.x`
     * Dacă totul a funcționat, ar trebui să se ceară parola setată în installer-ul sistemului de operare, iar după introducerea acesteia, se pot accesa toate fișierele de pe placă.
+    ![ssh](../master/other/miscellaneous/ssh.png)
     * Folosind comenzile `cd [...]` și `ls`, după accesarea folder-ului `/home/pi` se poate trece la pasul **3.**
+    ![verificationcommands](../master/other/miscellaneous/verificationcommands.png)
 3. Clonarea repository-ului de git: `git clone git@github.com:inventronica/druid-rc.git` 
 4. Instalarea bibliotecilor din fișierul [dependencies.txt](../master/dependencies.txt), prin terminalul plăcii
 5. Deschiderea folderului: `cd druid-rc/src/`
