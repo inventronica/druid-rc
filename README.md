@@ -5,13 +5,35 @@ Acesta este repository-ul care conține fișierele cu programele care stau la ba
 ## Descriere
 
 * folderul `detect_cubes` conține în fișierul `main.py` un program care determină ce culoare are cubul care se află în fața robotului.
-* folderul `raspberry` contine in fisierul `main.py` programul care se ocupa de miscarea robotului pe harta, in functie de pereti.
+* folderul [`src`](../master/src) conține în fișierul [`main.py`](../master/src/main.py) programul care se ocupă de toată misiunea de pe hartă.
 
 ## main.py
 
-în `main.py` sunt inițializați senzorii de Time-Of-Flight si Gyro. Este pornit procesul gryo de a calcula continuu unghiul facut cu peretele si procesul de senzor color pentru ca liniile de culoare sa nu fie pierdute (?). Este initializat programul PID (Proportional–Integral–Derivative Control System) si motorul.
+în [`main.py`](../master/src/main.py) sunt inițializați senzorii de Time-Of-Flight și Gyro. Aici se află și:
+```python
+class CubeDetection()
+```
+În această clasă se inițializează camera și verifică prin funcția `update_next()`, ce culoare are următorul cub, folosind aria pe care o are cadranul în care este inclus cubul. Astfel, o arie mai mare, înseamnă că paralelipipedul este mai aproape de robot.
 
-## sensors.py
+Folosind funcțiile din [follower.py](../master/src/follower.py), putem schimba "banda" pe care se află robotul, adică în cazul cuburilor verzi, robotul le va ocoli prin stânga, iar în cazul celor roșii, le va ocoli prin dreapta. 
+
+
+## [follower.py](../master/src/follower.py)
+
+[Follower.py](../master/src/follower.py) conține funcțiile necesare mișcării robotului pe hartă, orientându-se după giroscop și senzorii de distanță și de culoare. 
+
+```python
+class Follower()
+```
+Aici se inițializează componentele `gyro` și `pid (pentru disanță)`. Tot în `__init__` se modifică și adresele senzorilor, pentru a funcționa totul cum trebuie. Procesele din spate se inițializează tot în această parte a clasei, pentru a putea citi senzorii independent de restul proceselor din program.
+
+Funcția `run_follower()` se ocupă de urmărirea pereților și de păstrarea distanței față de aceștia. Aceasta este și funcția necesară pentru etapa de calificare, unde nu există obstacole pe hartă. Funcția lucrează cu PID-ul distanței, împreună cu cel al giroscopului pentru a crea un traseu optim pentru robot.
+
+Funcția `run_gyro_follower` face un lucru asemănător cu funcția `run_follower()`, doar că distanța setată, va reprezenta unghiul la care vrem să ajungem.
+
+`change_lane()`, folosește niște instrucțiuni prin care robotul poate să schimbe "banda" pe care se află. Pentru a fi un transfer cât mai sigur, robotul va face mai întâi un unghi de 45<sup>o</sup> față de unghiul la care se afla înainte, iar apoi se redresează pe traiectoria inițială, însă cu peretele verificat de senzorul de distanță schimbat.
+
+## [sensors.py](../master/src/sensors.py)
 
 [Sensors.py](../master/src/sensors.py) conține clasele tuturor senzorilor, dar și teste, pentru fiecare clasă, pentru a ne permite să verificăm eficiența programului.
 
@@ -57,23 +79,25 @@ Prin funcția `get_error`, îmbinăm unghiul de la giroscop cu distanța față 
 
 Funcția `get_output()`, esențială pentru eficiența programului, calculează și returnează unghiul la care robotul trebuie să se orienteze pentru a face schimbări mici, prin care acesta să ajungă pe drumul potrivit.
 
+> [dependencies.txt](../master/dependencies.txt) este fișierul de pe care, la instalarea codului, trebuie inserate comenzile responsabile de încărcarea bibliotecilor necesare funcționării.
+
 ## SSH
 
-Modul de comunicare cu placa Raspberry Pi este prin SSH (Secure Shell), un protocol de comunicare securizat prin care placa poate să fie accesată de pe orice dispozitiv oferind acces la un terminal. Conectarea se face prin comanda `ssh [user]@[ipadress] -p [port]` unde user este user-ul de pe placa (implicit "pi"); ipadress este adresa ip locala a placii si port este portul ssh deschis pe placa (implicit 22) de exemplu modul implicit de conectare arata asa: `ssh pi@192.168.x.x -p 22` si cand este solicitata se introduce parola user-ului, setata in momentul crearii imaginii si sistemului de operare (implicit raspberry). 
+Modul de comunicare cu placa Raspberry Pi este prin SSH (Secure Shell), un protocol de comunicare securizat prin care placa poate să fie accesată de pe orice dispozitiv oferind acces la un terminal. Conectarea se face prin comanda `ssh [user]@[ipadress] -p [port]` unde user este user-ul de pe placă (implicit "pi"); ipadress este adresa ip locală a plăcii și port este portul ssh deschis pe placă (implicit 22) de exemplu modul implicit de conectare arată așa: `ssh pi@192.168.x.x -p 22` și când este solicitată, se introduce parola user-ului, setată în momentul creării imaginii și sistemului de operare (implicit _raspberry_). 
 
 ## Instructiuni instalare 
 
 1. Instalarea sistemului de operare pe placa raspberry
-2. Conectarea prin SSH la placa
+2. Conectarea prin SSH la placă
 3. Clonarea repository-ului de git: `git clone git@github.com:inventronica/druid-rc.git` 
-4. Deschiderea folderului; `cd druid-rc/raspberry`
-5. Rularea aplicatiei cu comanda `python3 main.py`
+4. Instalarea bibliotecilor din fișierul [dependencies.txt](../master/dependencies.txt), prin terminalul plăcii
+5. Deschiderea folderului: `cd druid-rc/src/`
+6. Rularea aplicației cu comanda `python3 main.py`
 
 
-## Conexiunea cu raspberry 
+## Conexiunea cu Raspberry 
 
-Descarca si instaleaza Raspberry Pi Imager pe un calculator cu un cititor de carduri SD. Pune cardul SD pe care o sa il folosesti cu Raspberry Pi in cititor si deschide Raspberry Pi Imager. 
-www.raspberrypi.com/software/
+Descarcă și instalează [Raspberry Pi Imager](https://www.raspberrypi.com/software) pe un calculator cu un cititor de carduri SD. Pune cardul SD pe care îl vei folosi cu Raspberry Pi în cititor și deschide Raspberry Pi Imager. Urmează pașii de instalare din aplicație, apoi introdu cardul SD în placă și bucură-te de noul tău sistem de operare.
 
 
 
