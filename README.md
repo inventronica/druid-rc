@@ -4,7 +4,7 @@ Acesta este repository-ul care conține fișierele cu programele care stau la ba
 
 ## Descriere
 
-* folderul `detect_cubes` conține în fișierul `main.py` un program care determină ce culoare are cubul care se află în fața robotului.
+* folderul [`detect_cubes`](../master/src/detect_cubes) conține în fișierul [`main.py`](../master/src/detect_cubes/main.py) un program care determină ce culoare are cubul care se află în fața robotului.
 * folderul [`src`](../master/src) conține în fișierul [`main.py`](../master/src/main.py) programul care se ocupă de toată misiunea de pe hartă.
 
 ## main.py
