@@ -9,7 +9,7 @@ Acesta este repository-ul care conține fișierele cu programele care stau la ba
 
 ## main.py
 
-în [`main.py`](../master/src/main.py) sunt inițializați senzorii de Time-Of-Flight și Gyro. Aici se află și:
+în [`main.py`](../master/src/main.py) sunt inițializate obiectele pentru senzorii de Time-Of-Flight și Gyro. Aici se află și:
 ```python
 class CubeDetection()
 ```
@@ -25,7 +25,7 @@ Folosind funcțiile din [follower.py](../master/src/follower.py), putem schimba 
 ```python
 class Follower()
 ```
-Aici se inițializează componentele `gyro` și `pid (pentru disanță)`. Tot în `__init__` se modifică și adresele senzorilor, pentru a funcționa totul cum trebuie. Procesele din spate se inițializează tot în această parte a clasei, pentru a putea citi senzorii independent de restul proceselor din program.
+La început se inițializează componentele `gyro` și `pid (pentru disanță)`. Tot în `__init__` se modifică și adresele senzorilor, pentru a funcționa totul cum trebuie. Procesele din spate se inițializează tot în această parte a clasei, pentru a putea citi senzorii independent de restul proceselor din program.
 
 Funcția `run_follower()` se ocupă de urmărirea pereților și de păstrarea distanței față de aceștia. Aceasta este și funcția necesară pentru etapa de calificare, unde nu există obstacole pe hartă. Funcția lucrează cu PID-ul distanței, împreună cu cel al giroscopului pentru a crea un traseu optim pentru robot.
 
