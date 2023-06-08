@@ -9,7 +9,7 @@ Acesta este repository-ul care conține fișierele cu programele care stau la ba
 
 ## main.py
 
-In `main.py` sunt initializati senzorii de Time-Of-Flight si Gyro. Este pornit procesul gryo de a calcula continuu unghiul facut cu peretele si procesul de senzor color pentru ca liniile de culoare sa nu fie pierdute (?). Este initializat programul PID (Proportional–Integral–Derivative Control System) si motorul.
+în `main.py` sunt inițializați senzorii de Time-Of-Flight si Gyro. Este pornit procesul gryo de a calcula continuu unghiul facut cu peretele si procesul de senzor color pentru ca liniile de culoare sa nu fie pierdute (?). Este initializat programul PID (Proportional–Integral–Derivative Control System) si motorul.
 
 ## sensors.py
 
