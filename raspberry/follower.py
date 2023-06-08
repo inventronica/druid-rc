@@ -82,17 +82,14 @@ class Follower:
         turn = int(current_angle /(math.pi/2))
         base_angle = turn * math.pi/2
         base_turn = math.pi/4
-        if lane == 2:
+        if lane == 2: # go to right lane
             self.run_gyro_follower(base_angle-base_turn)
             self.run_gyro_follower(base_angle)
-        elif lane == 1:
+        elif lane == 1: # go to left lane
             self.run_gyro_follower(base_angle+base_turn)
             self.run_gyro_follower(base_angle)
 
 
-
-
-        
 def follower_process(running, wall):
     my_follower = Follower()
     # my_follower.run_gyro_follower(0)

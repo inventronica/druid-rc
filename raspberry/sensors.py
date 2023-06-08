@@ -51,8 +51,6 @@ class Gyro:
         self._icm = adafruit_icm20x.ICM20948(i2c)
         self._icm.GyroRange = 500
         self.angle = 0
-        self.rate = multiprocessing.Value('f', 0)
-        self.n = multiprocessing.Value('i', 0)
         self._last_speed = 0
         self._time = time.time()
 
@@ -64,8 +62,6 @@ class Gyro:
         z = round((z - 0.001395504677919364), 3)
         self.angle = self.angle +(self._last_speed + z)*delta/2
         self._last_speed = z 
-        self.n.value = self.n.value+1
-        self.rate.value = z
         return self.angle
 
 class Tof:
