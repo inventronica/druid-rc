@@ -74,7 +74,7 @@ if __name__ == '__main__':
                 cube.value = 2
             else:
                 pass
-        my_follower.running.value = 0
+        follow_run.value = 0
         follower_process.join()
     finally:
         motors = Motors()

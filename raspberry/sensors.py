@@ -21,20 +21,19 @@ class Color:
         GPIO.setup(self.enable_pin, GPIO.OUT)
         self.sensor = None
         self.power_off()
-        self.running = multiprocessing.Value('i', 1)
-        self.color = multiprocessing.Value('i', 1) # 0 = Unknown -- 1 = Orange -- 2 = Blue
+        self.started = false;
 
     def color_read(self):
         if self.sensor is None:
-            return
-        while self.running.value == 1:
+            return -1; 
+        else:
             r, g, b = self.sensor.color_rgb_bytes
             if(b > r+g):
-                self.color.value = 2
+                return 2
             elif(r > g+b):
-                self.color.value = 1
+                return 1
             else:
-                self.color.value = 0
+                return 0
 
     def power_off(self):
         GPIO.output(self.enable_pin, GPIO.HIGH)
@@ -123,10 +122,21 @@ def color_test():
     my_color.running.value = 0
     color_process.join()
 
+
+def color_process(running, color):
+    my_color = Color();
+    while running.value == 1:
+        if not my_color.started:
+            my_color.power_on();
+        color.value = my_color.color_read()
+        time.sleep(0.001);
+
+
 def gyro_process(running, angle):
     gyro = Gyro()
     while running.value == 1:
         angle.value = gyro.calculate_angle()
+
 
 def gyro_test():
     signal.signal(signal.SIGINT, exit_handler)
@@ -140,6 +150,7 @@ def gyro_test():
         time.sleep(1)
     gyro.running.value = 0
     gyro_process.join()
+
 
 
 if __name__ == '__main__':

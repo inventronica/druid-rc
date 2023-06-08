@@ -25,13 +25,14 @@ class Follower:
         self.color = Color(enable_pin=25)
         self.right_tof = Tof(address=0x33)
         self.left_tof = Tof(address=0x34, xshut_pin=17)
-        # self.color.power_on()
         self.angle = multiprocessing.Value('f', 0)
         self.gyro_run = multiprocessing.Value('i', 1)
         self.gyro_process = multiprocessing.Process(target=gyro_process, args=(self.gyro_run, self.angle))
         self.gyro_process.start()
-        # self.color_process = multiprocessing.Process(target=my_color.color_read)
-        # self.color_process.start()
+        self.color = multiprocessing.Value('i', 0)
+        self.color_run = multiprocessing.Value('i', 1)
+        self.color_process = multiprocessing.Process(target=color_process, args=(self.color_run, self.color))
+        self.color_process.start()
 
         self.motors = Motors()
 
