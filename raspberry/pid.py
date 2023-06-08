@@ -2,10 +2,8 @@ import time
 import math
 
 class PID:
-    def __init__(self, left_tof=None, right_tof=None, kp=5.0, ki=0.05, kd=0.0, damp = 0.7, distance = 25.0):
+    def __init__(self, kp=5.0, ki=0.05, kd=0.0, damp = 0.7):
         self.set_kpid(kp, ki, kd)
-        self.set_tof(left_tof, right_tof)
-        self.set_distance(distance)
         self.integral = 0
         self.last_error = 0
         self.last_time = time.time()
@@ -23,17 +21,10 @@ class PID:
     def set_damp(self, damp):
         self.damp = damp
 
-    def set_distance(self, distance):
-        self.distance = distance
-    
     def set_kpid(self, kp, ki, kd):
         self.kp = kp
         self.ki = ki
         self.kd = kd
-
-    def set_tof(self, left_tof, right_tof):
-        self.left_tof = left_tof
-        self.right_tof = right_tof
 
     def set_point(self, distance):
         self.distance = distance
@@ -43,7 +34,6 @@ class PID:
 
     def reset_last_error(self):
         self.last_error = 0
-
 
     def get_output(self, error):
         current_time = time.time()
@@ -60,18 +50,21 @@ class PID:
 
 
 def get_error(distance, gyro=0, wall='left', set_point=20):
+    gyro = 0
     if distance is not None:
         distance = distance * math.cos(gyro)
     if wall == 'left':
         if distance is None:
-            error = -20
+            error = i20
         else:
-            error = distance * math.cos(gyro) - set_point
+            error = set_point - distance * math.cos(gyro)
     if wall == 'right':
         if distance is None:
             error = 20
         else:
-            error = distance - set_point
+            error = distance * math.cos(gyro) - set_point
+    if wall == 'gyro':
+        error = distance-set_point
         
     if error > 20: error = 20
     if error < -20: error = -20

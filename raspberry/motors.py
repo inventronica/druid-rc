@@ -80,9 +80,9 @@ if __name__ == "__main__":
     running = True
     motors.set_speed(0)
     # calibrate servo
-    while running:
-        calibrate_servo(motors)
-    # test motor speed
     # while running:
-    #    test_speed(motors)
+    #     calibrate_servo(motors)
+    # test motor speed
+    while running:
+       test_speed(motors)
     motors.set_speed(0)
