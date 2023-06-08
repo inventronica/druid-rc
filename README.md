@@ -57,7 +57,7 @@ Deoarece senzorii de distanță și senzorul de culoare au aceeași adresă, la 
 
 Funcția `get_distance()` returnează cu ușurință, printr-o valoare de tip _double_, distanța pe care o face cu peretele, în centrimetri.
 
-## motors.py
+## [motors.py](../master/src/motors.py)
 În fișierul [motors.py](../master/src/motors.py) se află codul necesar controlării servomotorului și a motorului responsabil de mișcarea mașinii.
 ```python
 class Motors()
@@ -67,7 +67,7 @@ La început se ințializează niște limite pentru puterea motoarelor și pentru
 În această clasă se află funcția `set_speed()`, care inițial verifică integritatea parametrilor și îi încadrează între limite, dacă este cazul, apoi, în funcție de viteza setată, trimite date pe pinii _PWM_, pentru a determina mișcarea mașinii.
 
 În aceeași clasă se află și funcția `set_direction`, care primește ca parametru unghiul dorit, pe care să îl facă servomotorul, iar apoi printr-un _mapping_ calculat, transformă aceste valori și modifică orientarea roților.
-## pid.py
+## [pid.py](../master/src/pid.py)
 Fișierul [pid.py](../master/src/pid.py) conține codul esențial pentru eficientizarea mișcării robotului. 
 Folosind PID, putem reduce eroarea, prin componentele de proporționalitate, derivatele și integralele.
 
@@ -81,11 +81,11 @@ Funcția `get_output()`, esențială pentru eficiența programului, calculează 
 
 > [dependencies.txt](../master/dependencies.txt) este fișierul de pe care, la instalarea codului, trebuie inserate comenzile responsabile de încărcarea bibliotecilor necesare funcționării.
 
-## SSH
+## Conectarea prin SSH
 
 Modul de comunicare cu placa Raspberry Pi este prin SSH (Secure Shell), un protocol de comunicare securizat prin care placa poate să fie accesată de pe orice dispozitiv oferind acces la un terminal. Conectarea se face prin comanda `ssh [user]@[ipadress] -p [port]` unde user este user-ul de pe placă (implicit "pi"); ipadress este adresa ip locală a plăcii și port este portul ssh deschis pe placă (implicit 22) de exemplu modul implicit de conectare arată așa: `ssh pi@192.168.x.x -p 22` și când este solicitată, se introduce parola user-ului, setată în momentul creării imaginii și sistemului de operare (implicit _raspberry_). 
 
-## Instructiuni instalare 
+## Instrucțiuni instalare 
 
 1. Instalarea sistemului de operare pe placa raspberry
 2. Conectarea prin SSH la placă
