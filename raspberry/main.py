@@ -60,7 +60,7 @@ if __name__ == '__main__':
     signal.signal(signal.SIGINT, exit_handler)
     my_cube = CubeDetection()
     follow_run = multiprocessing.Value('i', 1)
-    cube = multiprocessing.Value('i', 2)
+    cube = multiprocessing.Value('i', 1)
     follower_process = multiprocessing.Process(target=follower_process, args=(follow_run, cube))
     try:
         follower_process.start()

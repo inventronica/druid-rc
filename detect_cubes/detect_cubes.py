@@ -10,7 +10,7 @@ import multiprocessing
 
 
 class CubeDetection:
-    def __init__(self, debug=False):
+    def __init__(self, debug=True):
         self.debug = debug
         if self.debug:
             import cv2
@@ -32,15 +32,15 @@ class CubeDetection:
                 next_cube = 'unknown'
             # next_cube: 'UNKNOWN', 'red box', 'green box'
 
-            # if self.debug:
-            #     cv2.imshow("frame", frame)
-            #     print(f'{next_cube=}')
+            if self.debug:
+                cv2.imshow("frame", frame)
+                print(f'{next_cube=}')
 
-            # if self.debug:
-            #     if cv2.waitKey(1) == ord('q'):
-            #         break
-            # if once:
-            #     break
+            if self.debug:
+                if cv2.waitKey(1) == ord('q'):
+                    break
+            if once:
+                break
 
             if self.debug:
                 return next_cube, frame

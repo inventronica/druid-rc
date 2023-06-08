@@ -2,7 +2,7 @@ import time
 import multiprocessing
 # from exit_handler import exit_handler
 from sensors import Tof
-from sensors import Gyro, gyro_process
+from sensors import Gyro, gyro_process, color_process
 from sensors import Color
 from pid import PID, get_error
 from motors import Motors
@@ -22,7 +22,7 @@ class Follower:
         self.distance = 25
         self.pid = PID(kp=6, kd=3, ki=0.2, damp=0.5)
         self.gyro_pid = PID(kp=700, kd=0, ki=0, damp=0)
-        
+        print('follower_process: before color')
         self.color = multiprocessing.Value('i', 0)
         self.color_run = multiprocessing.Value('i', 0)
         self.color_process = multiprocessing.Process(target=color_process, args=(self.color_run, self.color))
@@ -37,9 +37,10 @@ class Follower:
 
         self.motors = Motors()
 
-        time.sleep(2)
+        self.color_run.value = 1
+        time.sleep(1)
         self.motors.set_speed(30)
-        self.last_lane = 2
+        self.last_lane = 1
         self.clockwise = None
 
     
@@ -56,11 +57,13 @@ class Follower:
         elif side == 1:
             error = get_error(self.left_tof.get_distance(), gyro_angle, wall='left', set_point=self.distance)
         current_color = self.color.value
+        print(current_color)
         if self.clockwise is None:
             if current_color == 1:
                 self.clockwise = True
             elif current_color == 2:
                 self.clockwise = False
+            print("Clockwise", self.clockwise)
         if current_color == 1:
             if self.clockwise==True:
                 self.run_gyro_follower((turn-1)*math.pi/2 + math.pi / 4 -math.pi/2)

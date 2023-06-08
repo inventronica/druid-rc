@@ -16,7 +16,7 @@ i2c = board.I2C()
 
 
 class Color:
-    def __init__(self, enable_pin=25):
+    def __init__(self, enable_pin=24):
         self.enable_pin = enable_pin
         GPIO.setup(self.enable_pin, GPIO.OUT)
         self.sensor = None
@@ -27,6 +27,7 @@ class Color:
             return -1; 
         else:
             r, g, b = self.sensor.color_rgb_bytes
+            print(f'{r=}, {g=}, {b=}')
             if(b > r+g):
                 return 2
             elif(r > g+b):
@@ -91,11 +92,23 @@ class Tof:
         self.tof.clear_interrupt()
         return sensor_value
 
-def exit_handler(signal, frame):
-    global running
-    running = False
-    sys.exit(0)
+def color_process(running, color):
+    my_color = Color();
+    my_color.power_off();
+    while running.value == 0:
+        time.sleep(0.01);
+    my_color.power_on();
+    while running.value == 1:          
+        color.value = my_color.color_read()
+        if my_color.color_read() != 0:
+            print(f'!!!!!!!!!!!!!!!!!!!!!!! Color Process: {my_color.color_read()} !!!!!!!!!!!!!!!')
+        time.sleep(0.001);
 
+
+def gyro_process(running, angle):
+    gyro = Gyro()
+    while running.value == 1:
+        angle.value = gyro.calculate_angle()
 
 def tof_test():
     running = True
@@ -112,32 +125,17 @@ def tof_test():
 
 def color_test():
     running = True
-    signal.signal(signal.SIGINT, exit_handler)
-    my_color = Color()
-    color_process = multiprocessing.Process(target=my_color.color_read)
-    color_process.start()
+    color_run = multiprocessing.Value('i', 0)
+    color = multiprocessing.Value('f', 0.0)
+    my_color_process = multiprocessing.Process(target=color_process, args=(color_run, color))
+    my_color_process.start()
+    time.sleep(1)
+    color_run.value = 1
+    time.sleep(1)
     while running:
-        time.sleep(1)
-    my_color.running.value = 0
-    color_process.join()
-
-
-def color_process(running, color):
-    my_color = Color();
-    my_color.power_off();
-    while running.value == 0:
-        time.sleep(0.01);
-    my_color.power_on();
-    while running.value == 1:          
-        color.value = my_color.color_read()
-        time.sleep(0.001);
-
-
-def gyro_process(running, angle):
-    gyro = Gyro()
-    while running.value == 1:
-        angle.value = gyro.calculate_angle()
-
+        print(color.value)
+    color_run.value = 0
+    my_color_process.join()
 
 def gyro_test():
     signal.signal(signal.SIGINT, exit_handler)
@@ -154,5 +152,21 @@ def gyro_test():
 
 
 
+def exit_handler(signal, frame):
+    global running
+    running = False
+    sys.exit(0)
+
 if __name__ == '__main__':
-    tof_test()
+    color_test()
+    # GPIO.setup(xshut_pin, GPIO.OUT)
+    # GPIO.output(self.enable_pin, GPIO.HIGH)
+    # color_run = multiprocessing.Value('i', 0)
+    # color_detected = multiprocessing.Value('f', 0)
+    # my_color = multiprocessing.Process(target=color_process, args=(color_run, color_detected))
+    # my_color.start()
+    #right_tof = Tof(address=0x33)
+    # left_tof = Tof(address=0x34, xshut_pin=17)
+    # gyro_run = multiprocessing.Value('i', 1)
+    # angle = multiprocessing.Value('f', 0)
+    # my_gyro = multiprocessing.Process(target=gyro_process, args=(gyro_run, angle))
