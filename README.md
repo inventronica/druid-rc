@@ -89,7 +89,7 @@ Modul de comunicare cu placa Raspberry Pi este prin SSH (Secure Shell), un proto
 
 1. Instalarea sistemului de operare pe placa raspberry
 2. Conectarea prin SSH la placă
-    * Mai întăi se rulează comanda: `ping raspberrypi.local` - după aceasta, ar trebui să observați ip-ul raspberry-ului în consolă
+    * Mai întâi se rulează comanda: `ping raspberrypi.local` - după aceasta, ar trebui să observați ip-ul raspberry-ului în consolă
     ![ping](../master/other/miscellaneous/ping.png)
     * După aflarea ip-ului, se poate folosi comanda: `ssh pi@192.168.x.x`
     * Dacă totul a funcționat, ar trebui să se ceară parola setată în installer-ul sistemului de operare, iar după introducerea acesteia, se pot accesa toate fișierele de pe placă.
