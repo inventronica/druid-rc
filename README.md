@@ -1,10 +1,10 @@
 # Rodroizii - Future Engineers
 
-Acesta este repo-ul care conține fișierele cu programele care stau la baza funcționării robotului.
+Acesta este repository-ul care conține fișierele cu programele care stau la baza funcționării robotului.
 
 ## Descriere
 
-* folderul `detect_cubes` contine in fisierul `main.py` un program care determina ce culoare are cubul care se afla in fata robotului.
+* folderul `detect_cubes` conține în fișierul `main.py` un program care determină ce culoare are cubul care se află în fața robotului.
 * folderul `raspberry` contine in fisierul `main.py` programul care se ocupa de miscarea robotului pe harta, in functie de pereti.
 
 ## main.py
@@ -12,6 +12,8 @@ Acesta este repo-ul care conține fișierele cu programele care stau la baza fun
 In `main.py` sunt initializati senzorii de Time-Of-Flight si Gyro. Este pornit procesul gryo de a calcula continuu unghiul facut cu peretele si procesul de senzor color pentru ca liniile de culoare sa nu fie pierdute (?). Este initializat programul PID (Proportional–Integral–Derivative Control System) si motorul.
 
 ## sensors.py
+
+[sensors.py](../raspberry/sensors.py) conține clasele tuturor senzorilor, unde 
 
 ## motors.py
 
