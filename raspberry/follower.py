@@ -22,17 +22,18 @@ class Follower:
         self.distance = 25
         self.pid = PID(kp=6, kd=3, ki=0.2, damp=0.5)
         self.gyro_pid = PID(kp=700, kd=0, ki=0, damp=0)
-        self.color = Color(enable_pin=25)
+        
+        self.color = multiprocessing.Value('i', 0)
+        self.color_run = multiprocessing.Value('i', 0)
+        self.color_process = multiprocessing.Process(target=color_process, args=(self.color_run, self.color))
+        self.color_process.start()
+
         self.right_tof = Tof(address=0x33)
         self.left_tof = Tof(address=0x34, xshut_pin=17)
         self.angle = multiprocessing.Value('f', 0)
         self.gyro_run = multiprocessing.Value('i', 1)
         self.gyro_process = multiprocessing.Process(target=gyro_process, args=(self.gyro_run, self.angle))
         self.gyro_process.start()
-        self.color = multiprocessing.Value('i', 0)
-        self.color_run = multiprocessing.Value('i', 1)
-        self.color_process = multiprocessing.Process(target=color_process, args=(self.color_run, self.color))
-        self.color_process.start()
 
         self.motors = Motors()
 

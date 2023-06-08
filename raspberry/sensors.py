@@ -21,7 +21,6 @@ class Color:
         GPIO.setup(self.enable_pin, GPIO.OUT)
         self.sensor = None
         self.power_off()
-        self.started = false;
 
     def color_read(self):
         if self.sensor is None:
@@ -125,9 +124,11 @@ def color_test():
 
 def color_process(running, color):
     my_color = Color();
-    while running.value == 1:
-        if not my_color.started:
-            my_color.power_on();
+    my_color.power_off();
+    while running.value == 0:
+        time.sleep(0.01);
+    my_color.power_on();
+    while running.value == 1:          
         color.value = my_color.color_read()
         time.sleep(0.001);
 
