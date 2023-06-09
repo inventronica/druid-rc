@@ -6,7 +6,7 @@ from exit_handler import exit_handler
 import board
 import math
 import RPi.GPIO as GPIO
-import adafruit_vl53l1x
+import adafruit_vl53l0x
 import sys
 import adafruit_tcs34725 as col_lib
 
@@ -16,7 +16,7 @@ i2c = board.I2C()
 
 
 class Color:
-    def __init__(self, enable_pin=24):
+    def __init__(self, enable_pin=25):
         self.enable_pin = enable_pin
         GPIO.setup(self.enable_pin, GPIO.OUT)
         self.sensor = None
@@ -27,7 +27,6 @@ class Color:
             return -1; 
         else:
             r, g, b = self.sensor.color_rgb_bytes
-            print(f'{r=}, {g=}, {b=}')
             if(b > r+g):
                 return 2
             elif(r > g+b):
@@ -42,6 +41,7 @@ class Color:
     
     def power_on(self):
         GPIO.output(self.enable_pin, GPIO.LOW)
+        time.sleep(0.1)
         self.sensor = col_lib.TCS34725(i2c)
 
 
@@ -66,30 +66,41 @@ class Gyro:
 class Tof:
     DEFAULT_ADDRESS = 0x29
     def __init__(self, address = 0x29, xshut_pin=None):
-        # self.xshut_pin = xshut_pin
         if xshut_pin is not None:
-            self.reset_address(xshut_pin)
-        try:
-            self.tof = adafruit_vl53l1x.VL53L1X(i2c)
-            if address != self.DEFAULT_ADDRESS:
-                self.change_address(address)
-        except:
-            self.tof = adafruit_vl53l1x.VL53L1X(i2c, address=address)
-        self.tof.start_ranging()
+            self.power_off_neighbord(xshut_pin)
+            time.sleep(0.3)
+            try:
+                self.tof = adafruit_vl53l0x.VL53L0X(i2c)
+                if address is not None:
+                    self.change_address(address)
+            except:
+                self.tof = adafruit_vl53l0x.VL53L0X(i2c, address=address)
+            self.power_on_neighbord(xshut_pin)
+            time.sleep(0.3)
+        else:
+            try:
+                self.tof = adafruit_vl53l0x.VL53L0X(i2c)
+                if address != self.DEFAULT_ADDRESS:
+                    self.change_address(address)
+            except:
+                self.tof = adafruit_vl53l0x.VL53L0X(i2c, address=address)
+        self.measurement_timing_budget = 200
+        self.tof.start_continuous()
     
     def change_address(self, address):
         self.tof.set_address(address)
-    
-    def reset_address(self, xshut_pin):
-        GPIO.setup(xshut_pin, GPIO.OUT)
-        GPIO.output(xshut_pin, GPIO.LOW)
-        GPIO.output(xshut_pin, GPIO.HIGH)
 
+    def power_off_neighbord(self, pin):
+        GPIO.setup(pin, GPIO.OUT)
+        GPIO.output(pin, GPIO.LOW)
+
+    def power_on_neighbord(self, pin):
+        GPIO.output(pin, GPIO.HIGH)
+    
     def get_distance(self):
         while not self.tof.data_ready:
             pass
-        sensor_value = self.tof.distance
-        self.tof.clear_interrupt()
+        sensor_value = self.tof.range
         return sensor_value
 
 def color_process(running, color):
@@ -100,9 +111,6 @@ def color_process(running, color):
     my_color.power_on();
     while running.value == 1:          
         color.value = my_color.color_read()
-        if my_color.color_read() != 0:
-            print(f'!!!!!!!!!!!!!!!!!!!!!!! Color Process: {my_color.color_read()} !!!!!!!!!!!!!!!')
-        time.sleep(0.001);
 
 
 def gyro_process(running, angle):
@@ -158,15 +166,23 @@ def exit_handler(signal, frame):
     sys.exit(0)
 
 if __name__ == '__main__':
-    color_test()
-    # GPIO.setup(xshut_pin, GPIO.OUT)
-    # GPIO.output(self.enable_pin, GPIO.HIGH)
-    # color_run = multiprocessing.Value('i', 0)
-    # color_detected = multiprocessing.Value('f', 0)
-    # my_color = multiprocessing.Process(target=color_process, args=(color_run, color_detected))
-    # my_color.start()
-    #right_tof = Tof(address=0x33)
-    # left_tof = Tof(address=0x34, xshut_pin=17)
-    # gyro_run = multiprocessing.Value('i', 1)
-    # angle = multiprocessing.Value('f', 0)
-    # my_gyro = multiprocessing.Process(target=gyro_process, args=(gyro_run, angle))
+    print(1)
+    running = True
+    color_run = multiprocessing.Value('i', 0)
+    color_detected = multiprocessing.Value('f', 0)
+    my_color = multiprocessing.Process(target=color_process, args=(color_run, color_detected))
+    my_color.start()
+    right_tof = Tof(address=0x33, xshut_pin=21)
+    left_tof = Tof(address=0x34)
+    gyro_run = multiprocessing.Value('i', 1)
+    angle = multiprocessing.Value('f', 0)
+    my_gyro = multiprocessing.Process(target=gyro_process, args=(gyro_run, angle))
+
+    color_run.value = 1
+
+    while running:
+        print(f'{left_tof.get_distance()=}\t{right_tof.get_distance()=}')
+        time.sleep(0.05)
+    color_run.value = 0
+    sleep(0.2)
+    my_color.terminate()
