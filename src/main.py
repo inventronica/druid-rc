@@ -69,8 +69,10 @@ if __name__ == '__main__':
             sleep(0.2)
             next_cube = my_cube.update_next()
             if next_cube == 'green box':
+                print('gren box')
                 cube.value = 1
             elif next_cube == 'red box':
+                print('red box')
                 cube.value = 2
             else:
                 pass

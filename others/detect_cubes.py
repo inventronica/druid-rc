@@ -38,9 +38,9 @@ class CubeDetection:
 
             if self.debug:
                 if cv2.waitKey(1) == ord('q'):
-                    break
+                    pass
             if once:
-                break
+                pass
 
             if self.debug:
                 return next_cube, frame

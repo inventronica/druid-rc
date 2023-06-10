@@ -9,6 +9,9 @@ import RPi.GPIO as GPIO
 import adafruit_vl53l0x
 import sys
 import adafruit_tcs34725 as col_lib
+from adafruit_extended_bus import ExtendedI2C as I2C
+i2c = I2C(1)
+i2c_gyro = I2C(2)
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)			#disable warnings
@@ -16,7 +19,7 @@ i2c = board.I2C()
 
 
 class Color:
-    def __init__(self, enable_pin=25):
+    def __init__(self, enable_pin=24):
         self.enable_pin = enable_pin
         GPIO.setup(self.enable_pin, GPIO.OUT)
         self.sensor = None
@@ -27,6 +30,7 @@ class Color:
             return -1; 
         else:
             r, g, b = self.sensor.color_rgb_bytes
+            # print(f'{r=} {g=} {b=}')
             if(b > r+g):
                 return 2
             elif(r > g+b):
@@ -47,7 +51,7 @@ class Color:
 
 class Gyro:
     def __init__(self):
-        self._icm = adafruit_icm20x.ICM20948(i2c)
+        self._icm = adafruit_icm20x.ICM20948(i2c_gyro)
         self._icm.GyroRange = 500
         self.angle = 0
         self._last_speed = 0
@@ -61,6 +65,7 @@ class Gyro:
         z = round((z - 0.001395504677919364), 3)
         self.angle = self.angle +(self._last_speed + z)*delta/2
         self._last_speed = z 
+        time.sleep(0.0008)
         return self.angle
 
 class Tof:
@@ -100,7 +105,7 @@ class Tof:
     def get_distance(self):
         while not self.tof.data_ready:
             pass
-        sensor_value = self.tof.range
+        sensor_value = self.tof.range / 10
         return sensor_value
 
 def color_process(running, color):
@@ -116,7 +121,10 @@ def color_process(running, color):
 def gyro_process(running, angle):
     gyro = Gyro()
     while running.value == 1:
-        angle.value = gyro.calculate_angle()
+        current_angle = gyro.calculate_angle()
+        angle.acquire()
+        angle.value = current_angle
+        angle.release()
 
 def tof_test():
     running = True
@@ -146,17 +154,11 @@ def color_test():
     my_color_process.join()
 
 def gyro_test():
-    signal.signal(signal.SIGINT, exit_handler)
-    running = True
     gyro = Gyro()
-    gyro_process = multiprocessing.Process(target=gyro.calculate_angle)
-    gyro_process.start()
-    # gyro_process.join()
-    while running:
-        # if gyro.n.value > 0:
-        time.sleep(1)
-    gyro.running.value = 0
-    gyro_process.join()
+    print(f'Enter in Gyro')
+    while True:
+        current_angle = gyro.calculate_angle()
+        print(f'{current_angle=}')
 
 
 
@@ -166,23 +168,42 @@ def exit_handler(signal, frame):
     sys.exit(0)
 
 if __name__ == '__main__':
-    print(1)
+    multiprocessing.set_start_method('fork')
     running = True
+    # pin = 19
+    # GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    # pin = 20
+    # GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    # pin = 5
+    # GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    # pin = 6
+    # GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    # time.sleep(1)
     color_run = multiprocessing.Value('i', 0)
     color_detected = multiprocessing.Value('f', 0)
     my_color = multiprocessing.Process(target=color_process, args=(color_run, color_detected))
+    # gyro_test()
     my_color.start()
+    time.sleep(1)
     right_tof = Tof(address=0x33, xshut_pin=21)
+    time.sleep(1)
     left_tof = Tof(address=0x34)
+    time.sleep(1)
+    color_run.value = 1
+    # print(1)
+    # running = True
     gyro_run = multiprocessing.Value('i', 1)
     angle = multiprocessing.Value('f', 0)
     my_gyro = multiprocessing.Process(target=gyro_process, args=(gyro_run, angle))
-
-    color_run.value = 1
+    my_gyro.start()
 
     while running:
-        print(f'{left_tof.get_distance()=}\t{right_tof.get_distance()=}')
-        time.sleep(0.05)
-    color_run.value = 0
-    sleep(0.2)
-    my_color.terminate()
+        # pass
+    #     angle.acquire()
+        print(f'{left_tof.get_distance()=}\t{right_tof.get_distance()=}\t{angle.value=}\t{color_detected.value=}')
+    #     print(f'{angle.value}')
+    #     angle.release()
+        time.sleep(0.1)
+    # color_run.value = 0
+    # sleep(0.2)
+    # my_color.terminate()

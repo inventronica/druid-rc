@@ -75,16 +75,26 @@ def test_speed(motors):
     motors.set_speed(speed)
 
 if __name__ == "__main__":
-    servo = Motors()
-    servo.set_direction(-100)
-    # signal.signal(signal.SIGINT, exit_handler)
-    # motors = Motors()
-    # running = True
-    # motors.set_speed(0)
-    # # calibrate servo
-    # # while running:
-    # #     calibrate_servo(motors)
-    # # test motor speed
+    # servo = Motors()
+    # servo.set_direction(-100)
+    signal.signal(signal.SIGINT, exit_handler)
+    motors = Motors()
+    running = True
+    motors.set_speed(0)
+    # calibrate servo
+    a = -0.75
+    while running:
+        while a < 0.75:
+            a = a + 0.000125
+            motors.set_raw_position(a)
+            time.sleep(0.00001)
+        while a > -0.75:
+            a = a - 0.000125
+            motors.set_raw_position(a)
+            time.sleep(0.00001)
+
+        # calibrate_servo(motors)
+    # test motor speed
     # while running:
     #    test_speed(motors)
-    # motors.set_speed(0)
+    motors.set_speed(0)
